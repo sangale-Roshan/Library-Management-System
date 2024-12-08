@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %}
+  <div class="alert-container">
+    {% for message in messages %}
+      <div class=" text-center alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="container my-5">
+    <h1 class="text-center mb-5">Library Books</h1>
+    <div class="row">
+        {% for book in books %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ book.image.url }}" class="card-img-top" alt="{{ book.title }}" style="height: 300px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text"><strong>Author:</strong> {{ book.author }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            {% if book.copies_available == 0 %}
+                                Copies Available: 0 (All copies are borrowed)
+                            {% else %}
+                                Copies Available: {{ book.copies_available }}
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                <div class="card-footer text-center">
+                    {% if book.status == 'approved' %}
+                    <a href="{% url 'read_book' book.id %}" class="btn btn-success btn-sm">Read</a>
+                    {% elif book.status == 'expired' %}
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-danger btn-sm mr-auto" disabled>Expired</button>
+                        <form method="POST" action="/"><!-- Request Form -->
+                            {% csrf_token %}
+                            <input type="hidden" name="book_id" value="{{ book.id }}">
+                            <button type="submit" class="btn btn-primary btn-sm">Request</button>
+                        </form>
+                    </div>
+                    {% elif book.status == 'pending' %}
+                        <button class="btn btn-warning btn-sm" disabled>Request Pending</button>
+                    {% else %}
+                        <!-- Request Button -->
+                        <form method="POST" action="/"><!-- Request Form -->
+                            {% csrf_token %}
+                            <input type="hidden" name="book_id" value="{{ book.id }}">
+                            <button type="submit" class="btn btn-primary btn-sm">Request</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center">No books available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
